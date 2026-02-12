@@ -1,0 +1,25 @@
+version: "3.8"
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: taskforge-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=taskforge
+
+  redis:
+    image: redis:alpine
+    container_name: taskforge-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+
+volumes:
+  mongo-data:
+  redis-data:
