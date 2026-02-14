@@ -1,5 +1,5 @@
 const {Queue} = require('bullmq');
-const redisClient=  require('../config/redisClient');
+const redisClient=  require('../config/redis');
 
 const jobQueue= new Queue('taskforge-jobs',{
   connection: redisClient,

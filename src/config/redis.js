@@ -1,9 +1,8 @@
-const {Redis} = require('ioredis');
+const {createClient} = require('redis');
 
-const redisClient= new Redis({
-  host: process.env.REDIS_HOST,
-  port: process.env.REDIS_PORT,
-  maxRetriesPerRequest: null,
+const redisClient = createClient({
+  host: process.env.REDIS_HOST || 'localhost',
+  port: process.env.REDIS_PORT || 6379,
 });
 
 redisClient.on('connect', () => {

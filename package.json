@@ -1,9 +1,12 @@
 {
   "name": "taskforge",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start":"node src/server.js",
+    "dev": "nodemon src/server.js",
+    "worker": "node src/workers/worker.js",
+    "dev:worker": "nodemon src/workers/worker.js"
   },
   "keywords": [],
   "author": "",

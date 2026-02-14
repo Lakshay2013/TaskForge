@@ -88,4 +88,4 @@ class JobController {
   }
 }
 
-module.exports = JobController;
+module.exports = new JobController();
