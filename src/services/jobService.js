@@ -3,28 +3,33 @@ const Job = require('../models/Job');
 const jobQueue = require('../queues/jobQueue');
 
 class JobService {
-  async createJob(type, data, priority = 0) {
+  // Create a new job
+  async createJob(userId, type, data, priority = 0) {
     try {
       const jobId = uuidv4();
 
+      // Save to MongoDB
       const job = await Job.create({
         jobId,
+        userId,
         type,
         data,
         priority,
         status: 'pending',
       });
 
+      // Add to queue with priority
       await jobQueue.add(
         type,
         {
           jobId,
+          userId,
           type,
           data,
         },
         {
           jobId,
-          priority,
+          priority: -priority, 
         }
       );
 
@@ -34,23 +39,33 @@ class JobService {
     }
   }
 
-  async getJobById(jobId) {
-    const job = await Job.findOne({ jobId });
+
+  async getJobById(jobId, userId, isAdmin = false) {
+    const query = { jobId };
+    if (!isAdmin) {
+      query.userId = userId;
+    }
+
+    const job = await Job.findOne(query).populate('userId', 'name email');
     if (!job) {
       throw new Error('Job not found');
     }
     return job;
   }
 
-  async getJobs(filters = {}) {
+  async getJobs(userId, filters = {}, isAdmin = false) {
     const { status, type, limit = 50, skip = 0 } = filters;
     
     const query = {};
+    if (!isAdmin) {
+      query.userId = userId;
+    }
     if (status) query.status = status;
     if (type) query.type = type;
 
     const jobs = await Job.find(query)
-      .sort({ createdAt: -1 })
+      .populate('userId', 'name email')
+      .sort({ priority: -1, createdAt: -1 }) 
       .limit(limit)
       .skip(skip);
 
@@ -59,8 +74,11 @@ class JobService {
     return { jobs, total };
   }
 
-  async getStats() {
+  async getStats(userId, isAdmin = false) {
+    const matchStage = isAdmin ? {} : { userId };
+
     const stats = await Job.aggregate([
+      { $match: matchStage },
       {
         $group: {
           _id: '$status',
@@ -83,6 +101,7 @@ class JobService {
     return result;
   }
 
+  // Update job status
   async updateJobStatus(jobId, status, updates = {}) {
     const updateData = { status, ...updates };
     
@@ -106,4 +125,3 @@ class JobService {
 }
 
 module.exports = new JobService();
-
