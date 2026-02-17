@@ -7,6 +7,12 @@ const jobSchema= new mongoose.Schema({
     unique:true,
     index:true
   },
+  userId:{
+    type:mongoose.Schema.Types.ObjectId,
+    ref:'User',
+    required:true,
+    index:true
+  },
   type:{
     type:String,
     required:true,
@@ -46,5 +52,6 @@ const jobSchema= new mongoose.Schema({
 });
 
 jobSchema.index({ status: 1, createdAt: 1 });
+jobSchema.index({ userId: 1, createdAt: 1 });
 
 module.exports=mongoose.model('Job',jobSchema);
