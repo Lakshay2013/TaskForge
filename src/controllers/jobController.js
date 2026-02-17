@@ -2,89 +2,110 @@ const jobService = require('../services/jobService');
 
 class JobController {
   async createJob(req, res) {
-    try{
-      const{type,data,priority}=req.body;
-      if(!type || !data){
-      return res.status(400).json({
-        success:false,
-        message:'Job type and data are required'
+    try {
+      const { type, data, priority } = req.body;
+      const userId = req.user._id;
+
+      if (!type || !data) {
+        return res.status(400).json({
+          success: false,
+          message: 'Type and data are required',
+        });
+      }
+
+      const validTypes = ['email', 'file-upload', 'image-process', 'report-generation'];
+      if (!validTypes.includes(type)) {
+        return res.status(400).json({
+          success: false,
+          message: `Invalid job type. Must be one of: ${validTypes.join(', ')}`,
+        });
+      }
+
+      const job = await jobService.createJob(userId, type, data, priority || 0);
+
+      res.status(201).json({
+        success: true,
+        message: 'Job created successfully',
+        data: job,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error.message,
       });
     }
-
-    const validTypes=['email','file-upload','image-process','report-generation'];
-    if(!validTypes.includes(type)){
-      return res.status(400).json({
-        success:false,
-        message:`Invalid job type. Valid types are: ${validTypes.join(', ')}`
-      });
-    }
-
-    const job= await jobService.createJob(type,data,priority);
-    res.status(201).json({
-      success:true,
-      message:'Job created successfully',
-      data:job,
-    });
-  }catch(error){
-    res.status(500).json({
-      success:false,
-      message:error.message,
-    });
-  }
   }
 
-  async getJobById(req,res){
-    try{
-      const{jobId}=req.params;
-      const job =await jobService.getJobById(jobId);
+  // Get job by ID
+  async getJob(req, res) {
+    try {
+      const { jobId } = req.params;
+      const userId = req.user._id;
+      const isAdmin = req.user.role === 'admin';
+
+      const job = await jobService.getJobById(jobId, userId, isAdmin);
+
       res.json({
-        success:true,
-        data:job,
+        success: true,
+        data: job,
       });
-    }catch(err){
+    } catch (error) {
       res.status(404).json({
-        success:false,
-        message:err.message,
+        success: false,
+        message: error.message,
       });
     }
   }
 
-  async getJobs(req,res){
-    try{
-      const {status,type,limit,skip}=req.query;
-      const result= await jobService.getJobs({
-        status,
-        type,
-        limit:parseInt(limit) || 50,
-        skip:parseInt(skip) || 0,
-      });
+  // Get all jobs
+  async getJobs(req, res) {
+    try {
+      const { status, type, limit, skip } = req.query;
+      const userId = req.user._id;
+      const isAdmin = req.user.role === 'admin';
+
+      const result = await jobService.getJobs(
+        userId,
+        {
+          status,
+          type,
+          limit: parseInt(limit) || 50,
+          skip: parseInt(skip) || 0,
+        },
+        isAdmin
+      );
 
       res.json({
-        success:true,
-        data:result.jobs,
-        total:result.total,
-      });     
-    }catch(err){
+        success: true,
+        data: result.jobs,
+        total: result.total,
+      });
+    } catch (error) {
       res.status(500).json({
-        success:false,
-        message:err.message,
+        success: false,
+        message: error.message,
       });
     }
   }
 
-  async getStats(req,res){
-    try{
-      const stats= await jobService.getStats();
+  // Get statistics
+  async getStats(req, res) {
+    try {
+      const userId = req.user._id;
+      const isAdmin = req.user.role === 'admin';
+
+      const stats = await jobService.getStats(userId, isAdmin);
+
       res.json({
-        success:true,
-        data:stats,
+        success: true,
+        data: stats,
       });
-    }catch(err){
+    } catch (error) {
       res.status(500).json({
-        success:false,
-        message:err.message,
+        success: false,
+        message: error.message,
       });
-    }  
+    }
   }
 }
 
