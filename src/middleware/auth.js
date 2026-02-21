@@ -4,7 +4,7 @@ const User = require('../models/User');
 const authenticate = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
-    
+
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({
         success: false,
@@ -15,15 +15,17 @@ const authenticate = async (req, res, next) => {
     const token = authHeader.split(' ')[1];
 
     const decoded = verifyToken(token);
-    
+
     if (!decoded) {
       return res.status(401).json({
         success: false,
         message: 'Invalid or expired token',
       });
     }
-    const user = await User.findById(decoded.userId).select('-password');
-    
+
+    // ✅ Token always has { id } - clean single lookup
+    const user = await User.findById(decoded.id).select('-password');
+
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -31,7 +33,6 @@ const authenticate = async (req, res, next) => {
       });
     }
 
-    
     req.user = user;
     next();
   } catch (error) {

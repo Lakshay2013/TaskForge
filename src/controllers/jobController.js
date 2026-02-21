@@ -1,7 +1,7 @@
 const jobService = require('../services/jobService');
 
 class JobController {
-  async createJob(req, res) {
+  async createJob(req, res, next) {  // ✅ Add 'next'
     try {
       const { type, data, priority } = req.body;
       const userId = req.user._id;
@@ -29,15 +29,11 @@ class JobController {
         data: job,
       });
     } catch (error) {
-      res.status(500).json({
-        success: false,
-        message: error.message,
-      });
+      next(error);  // ✅ Pass to error handler
     }
   }
 
-  // Get job by ID
-  async getJob(req, res) {
+  async getJob(req, res, next) {  // ✅ Add 'next'
     try {
       const { jobId } = req.params;
       const userId = req.user._id;
@@ -50,15 +46,11 @@ class JobController {
         data: job,
       });
     } catch (error) {
-      res.status(404).json({
-        success: false,
-        message: error.message,
-      });
+      next(error);  // ✅ Pass to error handler
     }
   }
 
-  // Get all jobs
-  async getJobs(req, res) {
+  async getJobs(req, res, next) {  // ✅ Add 'next'
     try {
       const { status, type, limit, skip } = req.query;
       const userId = req.user._id;
@@ -81,15 +73,11 @@ class JobController {
         total: result.total,
       });
     } catch (error) {
-      res.status(500).json({
-        success: false,
-        message: error.message,
-      });
+      next(error);  // ✅ Pass to error handler
     }
   }
 
-  // Get statistics
-  async getStats(req, res) {
+  async getStats(req, res, next) {  // ✅ Add 'next'
     try {
       const userId = req.user._id;
       const isAdmin = req.user.role === 'admin';
@@ -101,10 +89,7 @@ class JobController {
         data: stats,
       });
     } catch (error) {
-      res.status(500).json({
-        success: false,
-        message: error.message,
-      });
+      next(error);  // ✅ Pass to error handler
     }
   }
 }

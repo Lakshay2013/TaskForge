@@ -1,7 +1,7 @@
 const authService = require('../services/authService');
 
 class AuthController {
-  async register(req, res) {
+  async register(req, res, next) {  // ✅ Add 'next' parameter
     try {
       const { name, email, password, role } = req.body;
 
@@ -20,14 +20,11 @@ class AuthController {
         data: result,
       });
     } catch (error) {
-      res.status(400).json({
-        success: false,
-        message: error.message,
-      });
+      next(error);  // ✅ Pass error to Express error handler
     }
   }
 
-  async login(req, res) {
+  async login(req, res, next) {  // ✅ Add 'next' parameter
     try {
       const { email, password } = req.body;
 
@@ -46,14 +43,11 @@ class AuthController {
         data: result,
       });
     } catch (error) {
-      res.status(401).json({
-        success: false,
-        message: error.message,
-      });
+      next(error);  // ✅ Pass error to Express error handler
     }
   }
 
-  async getProfile(req, res) {
+  async getProfile(req, res, next) {  // ✅ Add 'next' parameter
     try {
       const user = await authService.getProfile(req.user._id);
 
@@ -62,10 +56,7 @@ class AuthController {
         data: user,
       });
     } catch (error) {
-      res.status(404).json({
-        success: false,
-        message: error.message,
-      });
+      next(error);  // ✅ Pass error to Express error handler
     }
   }
 }
